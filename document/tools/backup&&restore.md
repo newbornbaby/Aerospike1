@@ -98,7 +98,33 @@ asbackup --node-list 1.2.3.4:3000,5.6.7.8:3000 --namespace test --directory back
 
 ### 2.1 概述
 
-​		使用Aerospike的标准客户端，从asbackup创建的备份还原ns或set数据。	
+​		使用Aerospike的标准客户端，从asbackup创建的备份还原ns或set数据。
 
 ​		asrestore实用程序还原使用asbackup创建的备份。如果集群上的命名空间已经包含现有记录，则可配置的写入策略决定哪些记录优先于命名空间中的记录或来自备份的记录。
 
+​		如果初始插入记录失败，asrestore将重试插入记录10次。在两次尝试之间会有1秒的暂停，并且错误会以debug级别写入日志。如果在10次尝试后未写入记录，则会中止还原，并显示错误消息“错误太多，正在放弃”。不重试的具体错误是“记录存在”（当使用唯一的选项）、“生成不匹配”（除非使用无代选择）和“无效用户名或密码”。
+
+​		当使用--directory选项运行时，asrestore要求给定目录中有多个.asb备份文件。或者，--input file使asrestore从给定的单个文件读取完整备份。如果-被指定为文件，asrestore将从stdin读取备份。
+
+### 2.2 Usage
+
+```bash
+asrestore --usage     #显示命令用法
+asrestore --z         #显示命令用法
+```
+
+​		运行asrestore的最基本形式是指定要还原的集群（--host）和包含备份文件的本地目录（--directory）。假设我们有一个包含IP地址为1.2.3.4的节点的集群。要从目录备份恢复备份，我们将发出以下命令。
+
+```bash
+asrestore --host 1.2.3.4 --directory backup_2015_08_24
+```
+
+​		默认情况下，备份将还原到从中获取的命名空间。--namespace选项可用于还原到其他命名空间。假设上述备份是从namespace test获取的，我们希望将其还原到namespace prod，然后发出以下命令。
+
+```bash
+asrestore --host 1.2.3.4 --directory backup_2015_08_24 --namespace test,prod
+```
+
+### 2.3 Connection Options
+
+​		同上
